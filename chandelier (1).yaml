@@ -1,0 +1,144 @@
+esphome:
+  name: "chandelier"
+  friendly_name: "chandelier"
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "UtTwsPNxWcnWzUteBkSy36myTELaNb7lEIHVnCMub1w="
+
+ota:
+  password: "f4fd9aef0283e51db5ecca2b0cbf3b40"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Lamp Fallback Hotspot"
+    password: "qUnCPI7gFAtH"
+
+captive_portal:
+output:
+  - platform: ledc
+    pin: GPIO19
+    id: gpio_19
+  - platform: ledc
+    pin: GPIO23
+    id: gpio_23
+  - platform: ledc
+    pin: GPIO21
+    id: gpio_21
+
+light:
+  - platform: monochromatic
+    name: tube_1
+    id: tube_1
+    output: gpio_19
+    effects:
+      - pulse:
+      - pulse: 
+          name: "Offset Pulse"
+          update_interval: 7s
+          transition_length: 7s
+      - pulse:
+          name: "Synced Pulse"
+          update_interval: 6s
+          transition_length: 6s
+          min_brightness: 10%
+      - random:
+      - lambda:
+          name: "Offset Pulse 2"
+          update_interval: 7s
+          lambda: |-
+            static int state = 0;
+            static float saved_bri = 0;
+            if(initial_run) saved_bri = id(ch_bright).state / 255;
+            auto call = id(tube_1).turn_on();
+            call.set_transition_length(7000);
+            if(state == 0) { call.set_brightness(0.0); }
+            else if(state == 1) { call.set_brightness(saved_bri); }
+            call.perform();
+            state += 1;
+            if(state == 2) state = 0;
+  - platform: monochromatic
+    name: tube_2
+    id: tube_2
+    output: gpio_21
+    effects:
+      - pulse:
+      - pulse:
+          name: "Offset Pulse"
+          update_interval: 10s
+          transition_length: 10s
+      - pulse:
+          name: "Synced Pulse"
+          update_interval: 6s
+          transition_length: 6s
+          min_brightness: 10%
+      - random:
+      - lambda:
+          name: "Offset Pulse 2"
+          update_interval: 7s
+          lambda: |-
+            static int state = 0;
+            static float saved_bri = 0;
+            if(initial_run) saved_bri = id(ch_bright).state / 255;
+            auto call = id(tube_1).turn_on();
+            call.set_transition_length(7000);
+            if(state == 0) { call.set_brightness(0.0); }
+            else if(state == 1) { call.set_brightness(saved_bri); }
+            call.perform();
+            state += 1;
+            if(state == 2) state = 0;
+  - platform: monochromatic
+    name: tube_3
+    id: tube_3
+    output: gpio_23
+    effects:
+      - pulse:
+      - pulse:
+          name: "Offset Pulse"
+          update_interval: 13s
+          transition_length: 13s
+      - pulse:
+          name: "Synced Pulse"
+          update_interval: 6s
+          transition_length: 6s
+          min_brightness: 10%
+      - random:
+      - lambda:
+          name: "Offset Pulse 2"
+          update_interval: 7s
+          lambda: |-
+            static int state = 0;
+            static float saved_bri = 0;
+            if(initial_run) saved_bri = id(ch_bright).state / 255;
+            auto call = id(tube_1).turn_on();
+            call.set_transition_length(7000);
+            if(state == 0) { call.set_brightness(0.0); }
+            else if(state == 1) { call.set_brightness(saved_bri); }
+            call.perform();
+            state += 1;
+            if(state == 2) state = 0;\
+sensor:
+  - platform: homeassistant
+    name: "Chandelier"
+    entity_id: light.all_chandelier
+    id: chandelier
+    internal: True
+  - platform: homeassistant
+    name: "Brightness"
+    entity_id: light.all_chandelier
+    id: ch_bright
+    internal: True
+    attribute: brightness    
